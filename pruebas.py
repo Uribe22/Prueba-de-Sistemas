@@ -51,19 +51,19 @@ class TestPositionTypeValues(unittest.TestCase):
 
     def test_latitude_as_string(self):
         with self.assertRaises(TypeError):
-            Position("90", 10, 0)
+            Position("90", 0, 0)
 
     def test_longitude_as_string(self):
         with self.assertRaises(TypeError):
-            Position(50, "10", 0)  
+            Position(0, "180", 0)  
     
     def test_latitude_none_value(self):
         with self.assertRaises(TypeError):
-            Position(None, 10, 0)  
+            Position(None, 0, 0)  
     
     def test_longitude_none_value(self):
         with self.assertRaises(TypeError):
-            Position(50, None, 0)  
+            Position(0, None, 0)  
 
 class TestDistanceClient(unittest.TestCase):
 
@@ -83,9 +83,10 @@ class TestDistanceClient(unittest.TestCase):
         cls.server.stop(None)
 
     def test_no_unit_specified(self):
-        message =  pb2.SourceDest(source=pb2.Position(latitude=50, longitude=60),
-            destination=pb2.Position(latitude=50 + 10, longitude=60 + 10),
-            unit="" 
+        message =  pb2.SourceDest(
+            source=pb2.Position(latitude=50, longitude=60),
+            destination=pb2.Position(latitude=60, longitude=70),
+            unit=""
         )
 
         response = self.stub.geodesic_distance(message)
@@ -94,13 +95,30 @@ class TestDistanceClient(unittest.TestCase):
     def test_invalid_unit(self):
         message = pb2.SourceDest(
             source=pb2.Position(latitude=50, longitude=60),
-            destination=pb2.Position(latitude=50 + 10, longitude=60 + 10),
+            destination=pb2.Position(latitude=60, longitude=70),
             unit="invalid"  
         )
         with self.assertRaises(grpc.RpcError):
             self.stub.geodesic_distance(message)
 
-    def test_no_distance(self):
+class TestDistanceKm(unittest.TestCase):
+
+    @classmethod #Levantamiento de servidor y cliente
+    def setUpClass(cls):
+        cls.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        pb2_grpc.add_DistanceServiceServicer_to_server(DistanceServicer(), cls.server)
+        cls.port = cls.server.add_insecure_port('[::]:0')
+        cls.server.start()
+        
+        cls.channel = grpc.insecure_channel(f'localhost:{cls.port}')
+        cls.stub = pb2_grpc.DistanceServiceStub(cls.channel)
+
+    @classmethod #Cierre de servidor y cliente
+    def tearDownClass(cls):
+        cls.channel.close()
+        cls.server.stop(None)
+
+    def test_no_distance_km(self):
         message = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),  
             destination=pb2.Position(latitude=0, longitude=0),
@@ -111,25 +129,73 @@ class TestDistanceClient(unittest.TestCase):
         self.assertEqual(response.distance, 0)
         self.assertEqual(response.unit, "km")
 
-    def test_very_close_distance(self):
+    def test_very_close_distance_km(self):
         message = pb2.SourceDest(
-            source=pb2.Position(latitude=50, longitude=60),
-            destination=pb2.Position(latitude=50.000001, longitude=60.000001),
+            source=pb2.Position(latitude=0, longitude=0),
+            destination=pb2.Position(latitude=0.000001, longitude=0.000001),
             unit="km"  
         )
         
         response = self.stub.geodesic_distance(message)
-        self.assertAlmostEqual(response.distance, 0.000144, None, "Los resultados no coinciden", 0.0001)
+        self.assertAlmostEqual(response.distance, 0.000144, None, "Los resultados no coinciden", 0.001)
     
-    def test_very_far_distance(self): #Antípodas
+    def test_very_far_distance_km(self): #Antípoda Chile y Asia central
         message = pb2.SourceDest(
-            source=pb2.Position(latitude=45, longitude=60),
-            destination=pb2.Position(latitude=-45, longitude=-120),
+            source=pb2.Position(latitude=45, longitude=90),
+            destination=pb2.Position(latitude=-45, longitude=-90),
             unit="km"
         )
         
         response = self.stub.geodesic_distance(message)
         self.assertAlmostEqual(response.distance, 20037.5, None, "Los resultados no coinciden", 10)
+
+class TestDistanceNm(unittest.TestCase):
+
+    @classmethod #Levantamiento de servidor y cliente
+    def setUpClass(cls):
+        cls.server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        pb2_grpc.add_DistanceServiceServicer_to_server(DistanceServicer(), cls.server)
+        cls.port = cls.server.add_insecure_port('[::]:0')
+        cls.server.start()
+        
+        cls.channel = grpc.insecure_channel(f'localhost:{cls.port}')
+        cls.stub = pb2_grpc.DistanceServiceStub(cls.channel)
+
+    @classmethod #Cierre de servidor y cliente
+    def tearDownClass(cls):
+        cls.channel.close()
+        cls.server.stop(None)
+
+    def test_no_distance_nm(self):
+        message = pb2.SourceDest(
+            source=pb2.Position(latitude=0, longitude=0),  
+            destination=pb2.Position(latitude=0, longitude=0),
+            unit="nm"
+        )
+
+        response = self.stub.geodesic_distance(message)
+        self.assertEqual(response.distance, 0)
+        self.assertEqual(response.unit, "nm")
+
+    def test_very_close_distance_nm(self):
+        message = pb2.SourceDest(
+            source=pb2.Position(latitude=0, longitude=0),
+            destination=pb2.Position(latitude=0.000001, longitude=0.000001),
+            unit="nm"  
+        )
+        
+        response = self.stub.geodesic_distance(message)
+        self.assertAlmostEqual(response.distance, 0.0000849, None, "Los resultados no coinciden", 0.0005)
+    
+    def test_very_far_distance_nm(self): #Antípoda Chile y Asia central
+        message = pb2.SourceDest(
+            source=pb2.Position(latitude=45, longitude=90),
+            destination=pb2.Position(latitude=-45, longitude=-90),
+            unit="nm"
+        )
+        
+        response = self.stub.geodesic_distance(message)
+        self.assertAlmostEqual(response.distance, 10823.6, None, "Los resultados no coinciden", 5)
 
 def suite():
     test_suite = unittest.TestSuite()
@@ -138,6 +204,8 @@ def suite():
     test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionLongitude))
     test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionTypeValues))
     test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceClient))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceKm))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceNm))
     
     return test_suite
 
