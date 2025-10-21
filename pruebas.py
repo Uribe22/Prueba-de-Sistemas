@@ -188,7 +188,7 @@ class TestDistanceInKm(unittest.TestCase):
         self.assertAlmostEqual(response.distance, 0.000144, None, "Los resultados no coinciden", 0.001)
     
     #❗El error en el cálculo de la distancia es mayor al esperado (10 km)
-    def test_very_far_distance_km(self): #Antípoda en el ecuador
+    def test_very_far_distance_km(self): # Antípoda polo a polo
         message = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),
             destination=pb2.Position(latitude=0, longitude=180),
@@ -307,7 +307,7 @@ class TestDistanceInNm(unittest.TestCase):
         self.assertAlmostEqual(response.distance, 0.0000849, None, "Los resultados no coinciden", 0.0005)
     
     #❗El error en el cálculo de la distancia es mayor al esperado (5.5 nm ≈ 10.2 km)
-    def test_very_far_distance_nm(self): #Antípoda en el ecuador
+    def test_very_far_distance_nm(self): # Antípoda polo a polo
         message = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),
             destination=pb2.Position(latitude=0, longitude=180),
