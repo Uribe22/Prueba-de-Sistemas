@@ -307,7 +307,7 @@ class TestDistanceInNm(unittest.TestCase):
         self.assertAlmostEqual(response.distance, 0.0000849, None, "Los resultados no coinciden", 0.0005)
     
     #❗El error en el cálculo de la distancia es mayor al esperado (5.5 nm ≈ 10.2 km)
-    def test_very_far_distance_nm(self): #Antípoda Chile y Asia central
+    def test_very_far_distance_nm(self): #Antípoda en el ecuador
         message = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),
             destination=pb2.Position(latitude=0, longitude=180),
@@ -406,7 +406,7 @@ class TestDistanceNoUnitEqualsKm(unittest.TestCase):
 
     # Verifica que al no especificar unidad, el resultado de distancia sea igual al obtenido al usar "km" al ser la unidad por defecto
 
-    def test_no_distance_no_unit(self):
+    def test_no_distance_no_unit_equals_km(self):
         message_nu = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),  
             destination=pb2.Position(latitude=0, longitude=0),
@@ -422,7 +422,7 @@ class TestDistanceNoUnitEqualsKm(unittest.TestCase):
         response_km = self.stub.geodesic_distance(message_km)
         self.assertEqual(response_nu.distance, response_km.distance, "Los resultados no coinciden")
 
-    def test_very_close_distance_no_unit(self):
+    def test_very_close_distance_no_unit_equals_km(self):
         message_nu = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),
             destination=pb2.Position(latitude=0.000001, longitude=0.000001),
@@ -438,7 +438,7 @@ class TestDistanceNoUnitEqualsKm(unittest.TestCase):
         response_km = self.stub.geodesic_distance(message_km)
         self.assertEqual(response_nu.distance, response_km.distance, "Los resultados no coinciden")
     
-    def test_very_far_distance_no_unit(self): #Antípoda Chile y Asia central
+    def test_very_far_distance_no_unit_equals_km(self):
         message_nu = pb2.SourceDest(
             source=pb2.Position(latitude=0, longitude=0),
             destination=pb2.Position(latitude=0, longitude=180),
