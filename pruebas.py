@@ -10,7 +10,7 @@ class TestPositionLatitude(unittest.TestCase):
 
     def test_min_latitude_out_of_range(self):
         with self.assertRaises(ValueError) as context:
-            Position(-90.000001, 0, 0)
+            Position(-90.000001, 0, 0) 
         self.assertIn("Latitude out of range", str(context.exception))
 
     def test_max_latitude_out_of_range(self):
@@ -19,7 +19,7 @@ class TestPositionLatitude(unittest.TestCase):
         self.assertIn("Latitude out of range", str(context.exception))
 
     def test_min_latitude_edge(self):#
-        posicion = Position(-90, 0, 0)
+        posicion = Position(-90, 0, 0) #valores frontera
         self.assertEqual(posicion._latitude, -90.0)
     
     def test_max_latitude_edge(self):
@@ -39,7 +39,7 @@ class TestPositionLongitude(unittest.TestCase):
         self.assertIn("Longitude out of range", str(context.exception))
 
     def test_min_longitude_edge(self):
-        posicion = Position(0, -180, 0)
+        posicion = Position(0, -180, 0) #valores frontera
         self.assertEqual(posicion._longitude, -180.0)
     
     def test_max_longitude_edge(self):
@@ -80,7 +80,7 @@ class TestDistanceClient(unittest.TestCase):
     @classmethod #Cierre de servidor y cliente
     def tearDownClass(cls):
         cls.channel.close()
-        cls.server.stop(None)
+        cls.server.stop(None) 
 
     def test_no_unit_specified(self):
         message =  pb2.SourceDest(
@@ -200,10 +200,10 @@ class TestDistanceNm(unittest.TestCase):
 def suite():
     test_suite = unittest.TestSuite()
 
-   # test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionLatitude))
-   # test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionLongitude))
-   # test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionTypeValues))
-   # test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceClient))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionLatitude))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionLongitude))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestPositionTypeValues))
+    test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceClient))
     test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceKm))
     test_suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestDistanceNm))
     
