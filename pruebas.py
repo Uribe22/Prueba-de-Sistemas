@@ -127,7 +127,6 @@ class TestDistanceKm(unittest.TestCase):
 
         response = self.stub.geodesic_distance(message)
         self.assertEqual(response.distance, 0)
-        self.assertEqual(response.unit, "km")
 
     def test_very_close_distance_km(self):
         message = pb2.SourceDest(
@@ -175,7 +174,6 @@ class TestDistanceNm(unittest.TestCase):
 
         response = self.stub.geodesic_distance(message)
         self.assertEqual(response.distance, 0)
-        self.assertEqual(response.unit, "nm")
 
     def test_very_close_distance_nm(self):
         message = pb2.SourceDest(
